@@ -1,0 +1,11 @@
+{ 
+        "package_path": "tech.ruos.smartslowlife.garden.irrigation",
+        "models":"ruos.flowerpot.rssp01",
+        "min_sdk_api_level":10038,
+        "developer_id": "ruos-tech",
+        "version_code":1,
+        "entrance_scene":{
+            "action_ids":[],
+            "trigger_ids":[]
+        }
+    }
