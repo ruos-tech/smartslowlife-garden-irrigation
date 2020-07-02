@@ -69,34 +69,59 @@ export default class HomePage extends React.Component {
   }
 
   componentDidMount() {
-    console.log("device info:");
-    console.log(this.state.device);
+    // console.log("device info:");
+    // console.log(this.state.device);
+    // Service.spec.getSpecString(this.state.device.deviceID).then(res => {
+    //   console.log("get spec string res", res)
+    // }).catch(error => {
+    //     console.log("error", error)
+    // });
     let params = [{
       did: this.state.device.deviceID,
       siid: 2,
       piid: 1
     }];
     Service.spec.getPropertiesValue(params).then(res => {
-      console.log("res", res);
-      // res.
-      // this.setState({})
+      // console.log("res", res);
+      res.forEach(element => {
+        this.syncProperty(element);
+      });
     }).catch(error => {
-        console.log("error", error)
+        console.log("get property error", error)
     });
   }
 
   changeSwitch(value){
+    console.log('change switch to '+value);
     let params = [{
       did: this.state.device.deviceID,
       siid: 2,
-      piid: 1
+      piid: 1,
+      value
     }];
     Service.spec.setPropertiesValue(params).then(res => {
-      console.log("res", res)
+      res.forEach(element => {
+        element.value = value;
+        this.syncProperty(element);
+      });
     }).catch(error => {
-        console.log("error", error)
+        console.log("set property error", error)
     });
-    this.setState({pro2_1:value});
+  }
+
+  syncProperty(element){
+    if(element.code === 0){
+      let v = element.value;
+      if(element.siid === 2){
+        if(element.piid === 1){
+          this.setState({
+            pro2_1:v
+          });
+        }
+      }
+    } else {
+      console.log('get/set property error.',element);
+    }
   }
 
   render() {
