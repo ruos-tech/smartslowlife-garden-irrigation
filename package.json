@@ -1,5 +1,5 @@
 {
-    "name": "project-tech-ruos-smartslowlife-garden-irrigation",
+    "name": "ruos.flowerpot.rssp01",
     "version": "1.0.38",
     "scripts": {
         "start": "node ../../bin/runProject.js"
