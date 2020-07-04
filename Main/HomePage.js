@@ -2,12 +2,13 @@
 import React, { Component } from 'react';
 import NavigationBar from "miot/ui/NavigationBar";
 import Switch from 'miot/ui/Switch';
-import { Service, Device } from "miot";
+import { Service, Device, Package } from "miot";
 import { View, StyleSheet,Text } from 'react-native';
 
 export default class HomePage extends React.Component {
 
   static navigationOptions = ({ navigation }) => {
+
     const { titleProps } = navigation.state.params || {};
     if (!titleProps) return { header: null }
     return {
@@ -23,49 +24,51 @@ export default class HomePage extends React.Component {
       backgroundColor: '#fff',
       showDot: true,
       index: 0,
+      // pro2_1: 水龙头开关
       pro2_1: false,
+      // pro3_3: 温度
+      pro3_3: 25.0,
+      // pro3_4:相对湿度
+      pro3_4: 23.1
     }
   }
 
-  renderCustomNavigation() {
-    if (!this.state.transparent) return null;
-    return (
-      <NavigationBar
-        backgroundColor='transparent'
-        subtitle='智慧灌溉系统'
-        // type={NavigationBar.TYPE.DARK}
-        left={[
+  UNSAFE_componentWillMount() {
+    this.setNavigation();
+  }
+
+  setNavigation() {
+    this.props.navigation.setParams({
+      titleProps: {
+        left: [
           {
             key: NavigationBar.ICON.BACK,
-            onPress: _ => {
-              console.log("go back.");
-              this.props.navigation.goBack();
-            }
-          },
-          {
-            key: NavigationBar.ICON.CLOSE,
-            onPress: _ => {
-              console.log("go close.");
-              this.props.navigation.goBack()
+            onPress: () => {
+              Package.exit();
             }
           }
-        ]}
-        right={[
+        ],
+        right: [
           {
             key: NavigationBar.ICON.COLLECT,
-            onPress: _ => console.log('onPress collect')
+            onPress: () => console.log('onPress collect')
           },
           {
             key: NavigationBar.ICON.MORE,
             showDot: this.state.showDot,
-            onPress: _ => console.log('onPress more')
+            onPress: () => console.log('onPress')
           }
-        ]}
-        title='智慧慢生活-智慧花园'
-        onPressTitle={_ => console.log('onPressTitle')}
-      />
-
-    );
+        ],
+        subtitle: '智慧灌溉系统',
+        title: '智慧慢生活-智慧花园',
+        backgroundColor: '#fff'
+      }
+    });
+    this.setState({
+      index: 0,
+      backgroundColor: '#fff',
+      transparent: false
+    });
   }
 
   componentDidMount() {
@@ -127,9 +130,18 @@ export default class HomePage extends React.Component {
   render() {
     return (
       <View style={{ backgroundColor: this.state.backgroundColor, flex: 1 }}>
-        {this.renderCustomNavigation()}
+      
         <View style={styles.mainContent}>
-          <Text>更多内容，敬请期待,{this.state.device.deviceID}</Text>
+          <View style={styles.tempArea}>
+            <Text style={styles.mainContentLabel}>当前温度</Text>
+            <Text style={styles.mainContentValue}>{this.state.pro3_3}</Text>
+            <Text style={styles.mainContentUnit}>℃</Text>
+          </View>
+          <View style={styles.tempArea}>
+            <Text style={styles.mainContentLabel}>相对湿度</Text>
+            <Text style={styles.mainContentValue}>{this.state.pro3_4}</Text>
+            <Text style={styles.mainContentUnit}>%</Text>
+          </View>
         </View>
         <View style={styles.footer}>
           <View style={styles.switchArea}>
@@ -151,24 +163,45 @@ var styles = StyleSheet.create({
     marginTop: 25,
     marginLeft: 25,
   },
+  mainContentLabel: {
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlignVertical: "center"
+  },
+  mainContentValue: {
+    fontSize: 85,
+    fontWeight: "bold",
+    textAlign: "right",
+    textAlignVertical: "center"
+  },
+  mainContentUnit: {
+    fontSize: 18,
+    textAlignVertical: "top",
+    textAlign: "left",
+    marginRight: 35
+  },
+  tempArea: {
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    justifyContent: 'space-between'
+  },
   footer: {
     width: '100%',
     height: 100,
     bottom: 0,
     position: "absolute",
-    fontSize: 14,
     borderColor: '#EFEFEF',
     borderWidth: 1,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20
   },
   switchArea: {
-  marginTop: 35,
-  marginLeft: 25,
-  marginRight: 25,
-  flexDirection: 'row',
-  flexWrap: 'nowrap',
-  justifyContent: 'space-between'
+    marginTop: 35,
+    marginLeft: 25,
+    marginRight: 25,
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    justifyContent: 'space-between'
   },
   switchText: {
     fontSize: 20,
