@@ -1,8 +1,9 @@
 'use strict';
 import React, { Component } from 'react';
 import NavigationBar from "miot/ui/NavigationBar";
+import { MessageDialog } from 'miot/ui';
 import Switch from 'miot/ui/Switch';
-import { Service, Device, Package } from "miot";
+import { Service, Device, Package,DeviceEvent } from "miot";
 import { View, StyleSheet,Text } from 'react-native';
 
 export default class HomePage extends React.Component {
@@ -29,7 +30,8 @@ export default class HomePage extends React.Component {
       // pro3_3: 温度
       pro3_3: 25.0,
       // pro3_4:相对湿度
-      pro3_4: 23.1
+      pro3_4: 23.1,
+      messageDialog: false,
     }
   }
 
@@ -49,10 +51,10 @@ export default class HomePage extends React.Component {
           }
         ],
         right: [
-          {
-            key: NavigationBar.ICON.COLLECT,
-            onPress: () => console.log('onPress collect')
-          },
+          // {
+          //   key: NavigationBar.ICON.COLLECT,
+          //   onPress: () => console.log('onPress collect')
+          // },
           {
             key: NavigationBar.ICON.MORE,
             showDot: this.state.showDot,
@@ -69,6 +71,18 @@ export default class HomePage extends React.Component {
       backgroundColor: '#fff',
       transparent: false
     });
+  }
+  
+  handleReceivedMessage = (device, message) => {
+    if (!message) {
+      return;
+    }
+    if(message.get("prop.2.1")){
+      this.setState({
+        pro2_1:message.get("prop.2.1")[0],
+        messageDialog: true
+      });
+    }
   }
 
   componentDidMount() {
@@ -92,6 +106,18 @@ export default class HomePage extends React.Component {
     }).catch(error => {
         console.log("get property error", error)
     });
+
+    // subscribe props change and add listener
+    this.messageSubscription = DeviceEvent.deviceReceivedMessages.addListener(this.handleReceivedMessage);
+    Device.getDeviceWifi().subscribeMessages("prop.2.1").then((subscription) => {
+      this.propsSubscription = subscription;
+    }).catch((err) => {
+      // console.log(err);
+    });
+
+
+
+
   }
 
   changeSwitch(value){
@@ -130,7 +156,7 @@ export default class HomePage extends React.Component {
   render() {
     return (
       <View style={{ backgroundColor: this.state.backgroundColor, flex: 1 }}>
-      
+        {/* 
         <View style={styles.mainContent}>
           <View style={styles.tempArea}>
             <Text style={styles.mainContentLabel}>当前温度</Text>
@@ -143,11 +169,21 @@ export default class HomePage extends React.Component {
             <Text style={styles.mainContentUnit}>%</Text>
           </View>
         </View>
+         */}
+        <MessageDialog
+          message={this.state.pro2_1 ? '开始浇水了':'停止浇水了'}
+          cancelable={false}
+          timeout={3000}
+          onDismiss={(e) => {
+            this.setState({messageDialog:false});
+          }}
+          visible={this.state.messageDialog}
+        />
         <View style={styles.footer}>
           <View style={styles.switchArea}>
             <Text style={styles.switchText}>水龙头开关</Text><Switch style={styles.switchIcon} 
               onTintColor='skyblue'
-              tintColor='lightpink'
+              tintColor='lightgrey'
               value={this.state.pro2_1}
               onValueChange={value => this.changeSwitch(value)}
               />
@@ -155,6 +191,11 @@ export default class HomePage extends React.Component {
         </View>
       </View>
     )
+  }
+
+  componentWillUnmount(){
+    this.messageSubscription && this.messageSubscription.remove();
+    this.propsSubscription && this.propsSubscription.remove();
   }
 }
 
