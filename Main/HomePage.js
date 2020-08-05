@@ -1,7 +1,9 @@
 'use strict';
 import React, { Component } from 'react';
 import NavigationBar from "miot/ui/NavigationBar";
-import { MessageDialog } from 'miot/ui';
+import {
+  MessageDialog
+} from 'miot/ui/Dialog';
 import Switch from 'miot/ui/Switch';
 import { Service, Device, Package,DeviceEvent } from "miot";
 import { View, StyleSheet,Text } from 'react-native';
@@ -171,9 +173,18 @@ export default class HomePage extends React.Component {
         </View>
          */}
         <MessageDialog
+          type={MessageDialog.TYPE.UNDERLINE}
           message={this.state.pro2_1 ? '开始浇水了':'停止浇水了'}
-          cancelable={false}
           timeout={3000}
+          buttons={[
+            {
+              text: '了解了',
+              style: { color: 'lightblue' },
+              callback: () => {
+                this.setState({ messageDialog: false })
+              }
+            },
+          ]}
           onDismiss={(e) => {
             this.setState({messageDialog:false});
           }}
