@@ -10,7 +10,6 @@ import { Service, Device, Package,DeviceEvent } from "miot";
 import { View, StyleSheet,Text,Dimensions, ScrollView, TouchableHighlight, Image } from 'react-native';
 import { getStatusBarHeight } from 'react-native-iphone-x-helper';
 
-
 /**
  * iOS: windowHeight === screenHeight
  * android: screenHeight - windowHeight = 底部导航条（非全面屏下虚拟按键）的高度
@@ -249,8 +248,8 @@ export default class HomePage extends React.Component {
           </View>
         </View>
          */}
-
         <Image style={styles.flower} source={require('./Resources/images/flower.png')} />
+        {this.state.pro2_1 && (<Image visible={this.state.pro2_1} style={styles.water} source={require('./Resources/images/water.png')} />)}
         <MessageDialog
           type={MessageDialog.TYPE.UNDERLINE}
           message={this.state.pro2_1 ? '开始浇水了':'停止浇水了'}
@@ -343,6 +342,7 @@ export default class HomePage extends React.Component {
               interval={1}
               defaultValue={this.state.pro6_2}
               unit={"分钟"}
+              lineStyle={"none"}
               onNumberChanged={value => this.changeAutoStop(value.newValue) }
             />
           </View>
@@ -386,6 +386,11 @@ var styles = StyleSheet.create({
   flower:{
     bottom: 90,
     alignItems: 'center',
+    position: "absolute",
+  },
+  water:{
+    bottom: 90,
+    width: screenWidth,
     position: "absolute",
   },
   mainContent: {
