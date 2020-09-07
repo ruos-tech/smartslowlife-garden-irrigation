@@ -6,8 +6,8 @@ import {
 } from 'miot/ui/Dialog';
 import Switch from 'miot/ui/Switch';
 import NumberSpinner from 'miot/ui/NumberSpinner';
-import { Service, Device, Package,DeviceEvent } from "miot";
-import { View, StyleSheet,Text,Dimensions, ScrollView, TouchableHighlight, Image } from 'react-native';
+import { Service, Device, Package, DeviceEvent } from "miot";
+import { View, StyleSheet, Text, Dimensions, ScrollView, TouchableHighlight, Image } from 'react-native';
 import { getStatusBarHeight } from 'react-native-iphone-x-helper';
 
 /**
@@ -46,6 +46,8 @@ export default class HomePage extends React.Component {
       index: 0,
       // pro2_1: 水龙头开关
       pro2_1: false,
+      // pro2_3：工作模式0：智能；1：手动
+      pro2_3: 1,
       // pro6_1: led_display
       pro6_1: false,
       pro6_2: 5,
@@ -95,14 +97,14 @@ export default class HomePage extends React.Component {
       transparent: false
     });
   }
-  
+
   handleReceivedMessage = (device, message) => {
     if (!message) {
       return;
     }
-    if(message.get("prop.2.1")){
+    if (message.get("prop.2.1")) {
       this.setState({
-        pro2_1:message.get("prop.2.1")[0],
+        pro2_1: message.get("prop.2.1")[0],
         messageDialog: true
       });
     }
@@ -123,6 +125,11 @@ export default class HomePage extends React.Component {
     },
     {
       did: this.state.device.deviceID,
+      siid: 2,
+      piid: 3
+    },
+    {
+      did: this.state.device.deviceID,
       siid: 6,
       piid: 1
     },
@@ -138,7 +145,7 @@ export default class HomePage extends React.Component {
         this.syncProperty(element);
       });
     }).catch(error => {
-        console.log("get property error", error)
+      console.log("get property error", error)
     });
 
     // subscribe props change and add listener
@@ -152,8 +159,8 @@ export default class HomePage extends React.Component {
 
   }
 
-  changeSwitch(value){
-    console.log('change switch to '+value);
+  changeSwitch(value) {
+    console.log('change switch to ' + value);
     let params = [{
       did: this.state.device.deviceID,
       siid: 2,
@@ -166,12 +173,31 @@ export default class HomePage extends React.Component {
         this.syncProperty(element);
       });
     }).catch(error => {
-        console.log("set property error", error)
+      console.log("set property error", error)
     });
   }
 
-  changeLedDisplay(value){
-    console.log('change led display to '+value);
+  changeMode(value) {
+    console.log('change model to ' + value);
+    let mode = value ? 0 : 1;
+    let params = [{
+      did: this.state.device.deviceID,
+      siid: 2,
+      piid: 3,
+      value: mode
+    }];
+    Service.spec.setPropertiesValue(params).then(res => {
+      res.forEach(element => {
+        element.value = mode;
+        this.syncProperty(element);
+      });
+    }).catch(error => {
+      console.log("set property error", error)
+    });
+  }
+
+  changeLedDisplay(value) {
+    console.log('change led display to ' + value);
     let params = [{
       did: this.state.device.deviceID,
       siid: 6,
@@ -184,12 +210,12 @@ export default class HomePage extends React.Component {
         this.syncProperty(element);
       });
     }).catch(error => {
-        console.log("set property error", error)
+      console.log("set property error", error)
     });
   }
 
-  changeAutoStop(value){
-    console.log('change auto stop to '+value);
+  changeAutoStop(value) {
+    console.log('change auto stop to ' + value);
     let params = [{
       did: this.state.device.deviceID,
       siid: 6,
@@ -202,32 +228,36 @@ export default class HomePage extends React.Component {
         this.syncProperty(element);
       });
     }).catch(error => {
-        console.log("set property error", error)
+      console.log("set property error", error)
     });
   }
 
-  syncProperty(element){
-    if(element.code === 0){
+  syncProperty(element) {
+    if (element.code === 0) {
       let v = element.value;
-      if(element.siid === 2){
-        if(element.piid === 1){
+      if (element.siid === 2) {
+        if (element.piid === 1) {
           this.setState({
-            pro2_1:v
+            pro2_1: v
+          });
+        } else if (element.piid === 3) {
+          this.setState({
+            pro2_3: v
           });
         }
-      } else if(element.siid === 6){
-        if(element.piid === 1){
+      } else if (element.siid === 6) {
+        if (element.piid === 1) {
           this.setState({
-            pro6_1:v
+            pro6_1: v
           });
-        } else if(element.piid === 2){
+        } else if (element.piid === 2) {
           this.setState({
-            pro6_2:v
+            pro6_2: v
           });
         }
       }
     } else {
-      console.log('get/set property error.',element);
+      console.log('get/set property error.', element);
     }
   }
 
@@ -252,7 +282,7 @@ export default class HomePage extends React.Component {
         {this.state.pro2_1 && (<Image visible={this.state.pro2_1} style={styles.water} source={require('./Resources/images/water.png')} />)}
         <MessageDialog
           type={MessageDialog.TYPE.UNDERLINE}
-          message={this.state.pro2_1 ? '开始浇水了':'停止浇水了'}
+          message={this.state.pro2_1 ? '开始浇水了' : '停止浇水了'}
           timeout={3000}
           buttons={[
             {
@@ -264,7 +294,7 @@ export default class HomePage extends React.Component {
             },
           ]}
           onDismiss={(e) => {
-            this.setState({messageDialog:false});
+            this.setState({ messageDialog: false });
           }}
           visible={this.state.messageDialog}
         />
@@ -279,12 +309,12 @@ export default class HomePage extends React.Component {
         >
           {this._renderForegroundContent()}
         </ScrollView>
-        
+
       </View>
     )
   }
 
-  componentWillUnmount(){
+  componentWillUnmount() {
     this.messageSubscription && this.messageSubscription.remove();
     this.propsSubscription && this.propsSubscription.remove();
   }
@@ -295,61 +325,80 @@ export default class HomePage extends React.Component {
     return (
       <View>
         <View style={styles.topBlank}>
-          
+
         </View>
         <View style={styles.foregroundContent}>
           <TouchableHighlight
-            key={'togle_switch'}
+            key={'mode_switch'}
             underlayColor="#fff"
             style={{ marginBottom: 15 }}
           >
-          <View style={styles.switchArea}>
-            <Text style={styles.switchText}>水龙头开关</Text><
-            Switch style={styles.switchIcon} 
-              onTintColor='skyblue'
-              tintColor='lightgrey'
-              value={this.state.pro2_1}
-              onValueChange={value => this.changeSwitch(value)}
+            <View style={styles.switchArea}>
+              <Text style={styles.switchText}>智能模式</Text><
+                Switch style={styles.switchIcon}
+                onTintColor='skyblue'
+                tintColor='lightgrey'
+                value={this.state.pro2_3 === 0}
+                onValueChange={value => this.changeMode(value)}
               />
-          </View>
+            </View>
           </TouchableHighlight>
+          {(this.state.pro2_3 === 1) && (
+            <TouchableHighlight
+              key={'togle_switch'}
+              underlayColor="#fff"
+              style={{ marginBottom: 15 }}
+            >
+              <View style={styles.switchArea}>
+                <Text style={styles.switchText}>水龙头开关</Text><
+                  Switch style={styles.switchIcon}
+                  onTintColor='skyblue'
+                  tintColor='lightgrey'
+                  value={this.state.pro2_1}
+                  onValueChange={value => this.changeSwitch(value)}
+                />
+              </View>
+            </TouchableHighlight>
+          )}
+          {(this.state.pro2_3 === 1) && (
+            <TouchableHighlight
+              key={'change_auto_stop_min'}
+              underlayColor="#fff"
+              style={{ marginBottom: 10 }}
+            >
+              <View style={styles.switchArea}>
+                <Text style={styles.switchText}>自动停止</Text>
+                <NumberSpinner
+                  style={{ width: 80, height: 100 }}
+                  maxValue={60}
+                  minValue={1}
+                  interval={1}
+                  defaultValue={this.state.pro6_2}
+                  unit={"分钟"}
+                  lineStyle={"none"}
+                  onNumberChanged={value => this.changeAutoStop(value.newValue)}
+                />
+              </View>
+            </TouchableHighlight>
+          )}
           <TouchableHighlight
             key={'togle_led_display'}
             underlayColor="#fff"
             style={{ marginBottom: 15 }}
           >
-          <View style={styles.switchArea}>
-            <Text style={styles.switchText}>指示灯开关</Text>
-            <Switch style={styles.switchIcon} 
-              onTintColor='skyblue'
-              tintColor='lightgrey'
-              value={this.state.pro6_1}
-              onValueChange={value => this.changeLedDisplay(value)}
+            <View style={styles.switchArea}>
+              <Text style={styles.switchText}>指示灯开关</Text>
+              <Switch style={styles.switchIcon}
+                onTintColor='skyblue'
+                tintColor='lightgrey'
+                value={this.state.pro6_1}
+                onValueChange={value => this.changeLedDisplay(value)}
               />
-          </View>
+            </View>
           </TouchableHighlight>
-          <TouchableHighlight
-            key={'change_auto_stop_min'}
-            underlayColor="#fff"
-            style={{ marginBottom: 10 }}
-          >
-          <View style={styles.switchArea}>
-            <Text style={styles.switchText}>自动停止</Text>
-            <NumberSpinner
-              style={{width:80, height:100}}
-              maxValue={60}
-              minValue={1}
-              interval={1}
-              defaultValue={this.state.pro6_2}
-              unit={"分钟"}
-              lineStyle={"none"}
-              onNumberChanged={value => this.changeAutoStop(value.newValue) }
-            />
-          </View>
-        </TouchableHighlight>
         </View>
         <View style={[styles.bottomBlank, { height: bottomBlankHeight }]} >
-          
+
         </View>
       </View>
     )
@@ -383,12 +432,12 @@ export default class HomePage extends React.Component {
 
 
 var styles = StyleSheet.create({
-  flower:{
+  flower: {
     bottom: 90,
     alignItems: 'center',
     position: "absolute",
   },
-  water:{
+  water: {
     bottom: 90,
     width: screenWidth,
     position: "absolute",
@@ -444,7 +493,7 @@ var styles = StyleSheet.create({
     fontWeight: "bold"
   },
   switchIcon: {
-    width: 50, 
+    width: 50,
     height: 25,
     marginRight: 25
   },
